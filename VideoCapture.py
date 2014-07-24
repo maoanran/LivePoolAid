@@ -12,9 +12,13 @@ while True:
     retval, image =  vid.read()
     image_small = cv2.resize(image, (WIDTH, HEIGHT))
     gray = cv2.cvtColor(image_small, cv2.COLOR_BGR2GRAY)
-    print dir(gray)
-    exit()
-    blurred = cv2.GaussianBlur(gray, (9, 9), 2, 2) 
+    for r in range(len(gray)):
+        for c in range(len(gray[r])):
+            if gray[r][c] > 175:
+                gray[r][c] = 255
+            else:
+                gray[r][c] = 0
+    blurred = cv2.GaussianBlur(gray, (9, 9), 2, 2)
     circles = cv2.HoughCircles(gray, cv.CV_HOUGH_GRADIENT, 1, .1, param1=200, param2=100)
     if circles != None and len(circles) > 0 and len(circles[0]) > 0:
         for circle in circles[0]:

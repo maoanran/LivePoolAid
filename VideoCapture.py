@@ -65,7 +65,7 @@ class CameraTracking:
         retval, image =  self.vid.read()
 
         image_small = cv2.resize(image, (self.WIDTH, self.HEIGHT))
-        projection = cv.CreateImage((self.WIDTH, self.HEIGHT), cv2.IPL_DEPTH_32F, 3)
+        #projection = cv.CreateImage((self.WIDTH, self.HEIGHT), cv2.IPL_DEPTH_32F, 3)
 
         edges = cv2.Canny(image_small, self.canny_threshold1, self.canny_threshold2, apertureSize=self.canny_apertureSize, L2gradient=self.canny_L2gradient)
         color_dst = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
@@ -90,7 +90,7 @@ class CameraTracking:
                 for circle in circles_to_draw:
                     cv2.circle(image_small, (circle.x, circle.y), circle.radius, green, thickness=2, lineType=4, shift=0)
                     cv2.circle(color_dst, (circle.x, circle.y), circle.radius, green, thickness=2, lineType=4, shift=0)
-                    cv2.circle(projection, (circle.x, circle.y), circle.radius, blue, thickness=2, lineType=4, shift=0)
+                    # cv2.circle(projection, (circle.x, circle.y), circle.radius, blue, thickness=2, lineType=4, shift=0)
                 cue_ball = self.find_cue_ball(image_small, circles_to_draw)
                 cv2.circle(image_small, (cue_ball.x, cue_ball.y), cue_ball.radius, red, thickness=2, lineType=4, shift=0)
                 cv2.circle(color_dst, (cue_ball.x, cue_ball.y), cue_ball.radius, red, thickness=2, lineType=4, shift=0)
@@ -119,7 +119,7 @@ class CameraTracking:
 
                 cv2.line(image_small, centerline[0], centerline[1], red, thickness=2, lineType=8, shift=0)
                 cv2.line(color_dst, centerline[0], centerline[1], red, thickness=2, lineType=8, shift=0)
-                cv2.line(projection, centerline[0], centerline[1], green, thickness=2, lineType=8, shift=0)
+                # cv2.line(projection, centerline[0], centerline[1], green, thickness=2, lineType=8, shift=0)
                 cv2.rectangle(image_small, cue_stick["point1"], cue_stick["point2"], blue, thickness=2, lineType=8, shift=0)
                 cv2.rectangle(color_dst, cue_stick["point1"], cue_stick["point2"], blue, thickness=2, lineType=8, shift=0)
 
@@ -141,13 +141,15 @@ class CameraTracking:
         point3 = (line2[0], line2[1])
         point4 = (line2[2], line2[3])
 
-        line_angle = math.degrees(math.atan( (line[1] - line[3]) / (line[0] - line[2]) ))
-        line2_angle = math.degrees(math.atan( (line2[1] - line2[3]) / (line2[0] - line2[2]) ))
+        line_angle = math.degrees(math.atan( float(line[1] - line[3]) / (line[0] - line[2]) ))
+        line2_angle = math.degrees(math.atan( float(line2[1] - line2[3]) / (line2[0] - line2[2]) ))
         avg_angle = (line_angle + line2_angle) / 2
+        if avg_angle > 89 and avg_angle < 91:
+            avg_angle = 89.9
 
-        print 'Average angle: ' + avg_angle
-        print 'Line1 angle: ' + line_angle
-        print 'Line2 angle: ' + line2_angle
+        print 'Average angle: ' + str(avg_angle)
+        print 'Line1 angle: ' + str(line_angle)
+        print 'Line2 angle: ' + str(line2_angle)
 
         # Get the perp line slope
         line1_perp_slope = (line[2] - line[0]) / (line[1] - line[3])
@@ -234,13 +236,6 @@ class CameraTracking:
 
     def set_circles(self, should_show):
         self.show_circles = should_show
-
-    def main_loop():
-        try:
-            callback = callback_queue.get(false)
-        except Queue.Empty:
-            print 'queue empty!'
-        callback()
 
 if __name__ == "__main__":
     tracker = CameraTracking()

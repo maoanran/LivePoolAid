@@ -47,6 +47,10 @@ class CameraTracking:
 
     circle_validator_frames = 2
     circle_validator_overlap = 2
+    circle_validator_delta_x = 5
+    circle_validator_delta_y = 5
+    circle_validator_delta_radius = 3
+
     line_validator_frames = 2
 
     circle_validator = Validator.Validator(Validator.validate_circles, circle_validator_frames, circle_validator_overlap)
@@ -72,7 +76,11 @@ class CameraTracking:
 
         if circles != None and len(circles) > 0 and len(circles[0]) > 0:
             circle_class_list = list(Circle(circle) for circle in circles[0])
+            Validator.delta_x = self.circle_validator_delta_x
+            Validator.delta_y = self.circle_validator_delta_y
+            Validator.delta_radius = self.circle_validator_delta_radius
             self.circle_validator.set_num_frames(self.circle_validator_frames)
+            self.circle_validator.set_num_overlap(self.circle_validator_overlap)
             self.circle_validator.submit_frame(circle_class_list)
             circles_to_draw = self.circle_validator.validate()
             if len(circles_to_draw) > 0:

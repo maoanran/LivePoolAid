@@ -23,10 +23,14 @@ class Validator:
     def set_num_overlap(self, num_overlap):
         self.num_overlap = num_overlap
 
+    def set_num_overlap(self, num_overlap):
+        self.num_overlap = num_overlap
+
 def validate_circles(frame_list, num_overlap):
     result = set()
     for combo in combinations(frame_list, num_overlap):
         result = result | set.intersection(*combo)
+    return result
 
 def validate_lines():
     pass

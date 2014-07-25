@@ -74,10 +74,10 @@ class CameraTracking:
         cv2.waitKey(10)
     
     def toggle_lines(self):
-        self.show_lines = !self.show_lines
+        self.show_lines = not self.show_lines
 
     def toggle_circles(self):
-        self.show_circles = !self.show_circles
+        self.show_circles = not self.show_circles
 
     def main_loop():
         try:

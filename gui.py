@@ -5,17 +5,22 @@ import thread
 settings_vars = [
     'canny_threshold1',
     'canny_threshold2',
-    'canny_apertureSize',
-    'canny_L2gradient',
     'hough_circles_dp',
     'hough_circles_minDist',
     'hough_circles_param1',
     'hough_circles_param2',
+    'hough_circles_minRadius',
+    'hough_circles_maxRadius',
     'hough_lines_rho',
     'hough_lines_theta',
     'hough_lines_threshold',
     'hough_lines_minLineLength',
     'hough_lines_maxLineGap',
+    'cue_line_slope',
+    'cue_line_dist_max',
+    'cue_line_dist_min',
+    'circle_validator_frames',
+    'line_validator_frames',
 ]
 
 settings = []
@@ -67,13 +72,13 @@ def execute_computer_vision():
 
 def draw_loop():
     global tracker
-    global root  
+    global root
     global images
-    if images != None:  
+    if images != None:
         tracker.show_image(**images)
         images = None
     root.after(25, draw_loop)
-    
+
 
 def cv_loop():
     global tracker

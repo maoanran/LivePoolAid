@@ -1,5 +1,6 @@
 from Tkinter import *
 from VideoCapture import CameraTracking
+import thread
 
 settings_vars = [
     'canny_threshold1',
@@ -20,6 +21,7 @@ settings_vars = [
 settings = []
 root = None
 tracker = None
+images = None
 
 def main():
     global root
@@ -29,7 +31,8 @@ def main():
 
     initWindow(root)
     initUI(root)
-    root.after(25, execute_computer_vision)
+    thread.start_new_thread(execute_computer_vision, ())
+    root.after(25, draw_loop)
     root.mainloop()
 
 def initWindow(root):
@@ -57,10 +60,25 @@ def update_callback():
     root.after(1, update_settings)
 
 def execute_computer_vision():
+    global images
     global tracker
-    global root
-    tracker.process_video()
-    root.after(25, execute_computer_vision)
+    while True:
+        images = tracker.process_video()
+
+def draw_loop():
+    global tracker
+    global root  
+    global images
+    if images != None:  
+        tracker.show_image(**images)
+        images = None
+    root.after(25, draw_loop)
+    
+
+def cv_loop():
+    global tracker
+    while True:
+        tracker.process_video()
 
 def update_settings():
     global tracker

@@ -46,9 +46,10 @@ class CameraTracking:
     cue_line_dist_min = 2
 
     circle_validator_frames = 2
+    circle_validator_overlap = 2
     line_validator_frames = 2
 
-    circle_validator = Validator.Validator(Validator.validate_circles, circle_validator_frames)
+    circle_validator = Validator.Validator(Validator.validate_circles, circle_validator_frames, circle_validator_overlap)
     line_validator = Validator.Validator(Validator.validate_lines, line_validator_frames)
 
     def update_settings(self, **kwargs):

@@ -20,11 +20,13 @@ class CameraTracking:
     canny_apertureSize = 3
     canny_L2gradient = True
     
+    show_circles = True
     hough_circles_dp = 1
     hough_circles_minDist = 50
     hough_circles_param1 = 70
     hough_circles_param2 = 40
 
+    show_lines = True
     hough_lines_rho = 1
     hough_lines_theta = cv.CV_PI / 180
     hough_lines_threshold = 100
@@ -44,13 +46,21 @@ class CameraTracking:
         color_dst = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
 
         #gray = cv2.cvtColor(image_small, cv2.COLOR_BGR2GRAY)
-        circles = cv2.HoughCircles(edges, cv.CV_HOUGH_GRADIENT, self.hough_circles_dp, self.hough_circles_minDist, param1=self.hough_circles_param1, param2=self.hough_circles_param2)
+        if self.show_circles:
+            circles = cv2.HoughCircles(edges, cv.CV_HOUGH_GRADIENT, self.hough_circles_dp, self.hough_circles_minDist, param1=self.hough_circles_param1, param2=self.hough_circles_param2)
+        else:
+            circles = None
+
         if circles != None and len(circles) > 0 and len(circles[0]) > 0:
             for circle in circles[0]:
                 cv2.circle(image_small, (circle[0], circle[1]), circle[2], color, thickness=2, lineType=4, shift=0)
                 cv2.circle(color_dst, (circle[0], circle[1]), circle[2], color, thickness=2, lineType=4, shift=0)
         
-        lines = cv2.HoughLinesP(edges, self.hough_lines_rho, self.hough_lines_theta, threshold=self.hough_lines_threshold, minLineLength=self.hough_lines_minLineLength, maxLineGap=self.hough_lines_maxLineGap)
+        if self.show_lines:
+            lines = cv2.HoughLinesP(edges, self.hough_lines_rho, self.hough_lines_theta, threshold=self.hough_lines_threshold, minLineLength=self.hough_lines_minLineLength, maxLineGap=self.hough_lines_maxLineGap)
+        else:
+            lines = None
+        
         if lines != None and len(lines) > 0 and len(lines[0]) > 0:
             for line in lines[0]:
                 cv2.line(image_small, (line[0], line[1]), (line[2], line[3]), color, thickness=2, lineType=8, shift=0)
@@ -64,6 +74,12 @@ class CameraTracking:
             cv2.imshow(key, value)
         cv2.waitKey(10)
     
+    def toggle_lines(self):
+        self.show_lines = !self.show_lines
+
+    def toggle_circles(self):
+        self.show_circles = !self.show_circles
+
     def main_loop():
         try:
             callback = callback_queue.get(false)

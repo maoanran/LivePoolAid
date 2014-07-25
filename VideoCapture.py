@@ -43,7 +43,8 @@ class CameraTracking:
         color_dst = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
 
         #gray = cv2.cvtColor(image_small, cv2.COLOR_BGR2GRAY)
-        circles = cv2.HoughCircles(edges, cv.CV_HOUGH_GRADIENT, self.hough_circles_dp, self.hough_circles_minDist, param1=self.hough_circles_param1, param2=self.hough_circles_param2)
+        #circles = cv2.HoughCircles(edges, cv.CV_HOUGH_GRADIENT, self.hough_circles_dp, self.hough_circles_minDist, param1=self.hough_circles_param1, param2=self.hough_circles_param2)
+        circles = None
         if circles != None and len(circles) > 0 and len(circles[0]) > 0:
             for circle in circles[0]:
                 cv2.circle(image_small, (circle[0], circle[1]), circle[2], color, thickness=2, lineType=4, shift=0)

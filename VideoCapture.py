@@ -73,10 +73,10 @@ class CameraTracking:
             cv2.imshow(key, value)
         cv2.waitKey(10)
     
-    def show_lines(self, should_show):
+    def set_lines(self, should_show):
         self.show_lines = should_show
 
-    def show_circles(self, should_show):
+    def set_circles(self, should_show):
         self.show_circles = should_show
 
     def main_loop():

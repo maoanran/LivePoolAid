@@ -50,9 +50,15 @@ def initUI(root):
     Checkbutton(root, variable=lines_checkbox).grid(row=len(settings_vars), column=1)
     Checkbutton(root, variable=circles_checkbox).grid(row=len(settings_vars) + 1, column=1)
 
+    Button(root, text='Update', command=update_callback).grid(row=len(settings_vars) + 2, column=1)
+
+def update_callback():
+    print 'Updating...'
+    root.after(1, update_settings)
+
 def execute_computer_vision():
     global tracker
-    update_settings()
+    global root
     tracker.process_video()
     root.after(25, execute_computer_vision)
 

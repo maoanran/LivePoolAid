@@ -62,6 +62,7 @@ class CameraTracking:
 
     def process_video(self):
         retval, image =  self.vid.read()
+
         image_small = cv2.resize(image, (self.WIDTH, self.HEIGHT))
 
         edges = cv2.Canny(image_small, self.canny_threshold1, self.canny_threshold2, apertureSize=self.canny_apertureSize, L2gradient=self.canny_L2gradient)
@@ -105,6 +106,13 @@ class CameraTracking:
             cue_stick = self.find_cue_stick(lines[0], None)
             if cue_stick != None:
                 centerline = self.create_center_line(cue_stick["line1"], cue_stick["line2"])
+                path_lines = self.create_path_lines(centerline, lines[0])
+
+                # Draw path
+                for p_line in path_lines:
+                    cv2.line(image_small, p_line[0], p_line[1], red, thickness=2, lineType=8, shift=0)
+                    cv2.line(color_dst, p_line[0], p_line[1], red, thickness=2, lineType=8, shift=0)
+
                 cv2.line(image_small, centerline[0], centerline[1], red, thickness=2, lineType=8, shift=0)
                 cv2.line(color_dst, centerline[0], centerline[1], red, thickness=2, lineType=8, shift=0)
                 cv2.rectangle(image_small, cue_stick["point1"], cue_stick["point2"], blue, thickness=2, lineType=8, shift=0)
@@ -113,6 +121,16 @@ class CameraTracking:
         gray = cv2.cvtColor(image_small, cv2.COLOR_BGR2GRAY)
 
         return {"Original": image_small, "Edge Detection": color_dst, "Grayscale":gray}
+
+    def create_path_lines(self, centerline, lines):
+        return []
+
+
+    def intersection(self, m1, b1, m2, b2):
+        x = ((b2 - b1) / (m1- m2))
+        y = m1 * x + b1
+        return (x, y)
+
 
     def create_center_line(self, line, line2):
         point1 = (line[0], line[1])
@@ -123,6 +141,10 @@ class CameraTracking:
         line_angle = math.degrees(math.atan( (line[1] - line[3]) / (line[0] - line[2]) ))
         line2_angle = math.degrees(math.atan( (line2[1] - line2[3]) / (line2[0] - line2[2]) ))
         avg_angle = (line_angle + line2_angle) / 2
+
+        print 'Average angle: ' + avg_angle
+        print 'Line1 angle: ' + line_angle
+        print 'Line2 angle: ' + line2_angle
 
         # Get the perp line slope
         line1_perp_slope = (line[2] - line[0]) / (line[1] - line[3])
@@ -135,7 +157,7 @@ class CameraTracking:
         y = line1_perp_slope * x + line1_perp_y_intercept
 
         # This point is the point where the perp line intersects line2
-        intersection_point = (x, y)
+        intersection_point = self.intersection(line1_perp_slope, line1_perp_y_intercept, line2_slope, line2_y_intercept)
 
         # Find midpoint of perp line
         mid_point = ((point1[0] + intersection_point[0]) / 2, (point1[1] + intersection_point[1]) / 2)

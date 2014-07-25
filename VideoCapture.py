@@ -141,7 +141,7 @@ class CameraTracking:
         mid_point = ((point1[0] + intersection_point[0]) / 2, (point1[1] + intersection_point[1]) / 2)
 
         # Calculate stuff for line function
-        mid_point_slope = math.tan(avg_angle)
+        mid_point_slope = math.tan(math.radians(avg_angle))
         mid_point_y_intercept = mid_point[1] - mid_point_slope * mid_point[0]
 
         # Return line that stretches screen. y = m * x + b

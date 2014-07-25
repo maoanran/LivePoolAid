@@ -130,7 +130,21 @@ class CameraTracking:
         return {"Original": image_small, "Edge Detection": color_dst, '''"Rotated": rotated'''}
 
     def create_path_lines(self, centerline, lines):
-        return []
+        path_lines = []
+        centerline_slope = (centerline[0][1] - centerline[1][1]) * 1.0 / (centerline[0][0] - centerline[1][0])
+        centerline_y_intercept = centerline[0][1] * 1.0 - centerline_slope * centerline_slope[0][0]
+
+        for line in lines:
+            line_slope = (line[1] - line[3]) * 1.0 / (line[0] - line[2])
+            line_angle = math.degrees(math.atan(line_slope))
+            line_y_intercept = line[1] * 1.0 - line_slope * line[0]
+            # If not vertical or horizontal
+            if abs(line_angle - 90) > 5 || abs(line_angle) > 5:
+                continue
+            intersections_point = self.intersection(line_slope, line_y_intercept, centerline_slope, centerline_y_intercept)
+
+            if(intersection_point[0] >= 0 && intersection_point[0] < (self.WIDTH - 1) && intersection_point[1] >= 0 && intersection_point[1] < (self.HEIGHT - 1) ):
+                path_lines.append(line)
 
     def rotateImage(self, image, angle):
         image_center = tuple(numpy.array(image.shape) / 2)

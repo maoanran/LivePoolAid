@@ -116,8 +116,8 @@ class CameraTracking:
 
                 # Draw path
                 for p_line in path_lines:
-                    cv2.line(image_small, p_line[0], p_line[1], red, thickness=2, lineType=8, shift=0)
-                    cv2.line(color_dst, p_line[0], p_line[1], red, thickness=2, lineType=8, shift=0)
+                    cv2.line(image_small, p_line[0], p_line[1], blue, thickness=2, lineType=8, shift=0)
+                    cv2.line(color_dst, p_line[0], p_line[1], blue, thickness=2, lineType=8, shift=0)
 
                 cv2.line(image_small, centerline[0], centerline[1], red, thickness=2, lineType=8, shift=0)
                 cv2.line(color_dst, centerline[0], centerline[1], red, thickness=2, lineType=8, shift=0)
@@ -133,14 +133,14 @@ class CameraTracking:
         path_lines = []
         centerline_slope = (centerline[0][1] - centerline[1][1]) * 1.0 / (centerline[0][0] - centerline[1][0])
         centerline_y_intercept = centerline[0][1] * 1.0 - centerline_slope * centerline[0][0]
-        bounce_slope = -centerline_slope
+        bounce_slope = centerline_slope * -1.0
 
         for line in lines:
             line_slope = (line[1] - line[3]) * 1.0 / (line[0] - line[2])
             line_angle = math.degrees(math.atan(line_slope))
             line_y_intercept = line[1] * 1.0 - line_slope * line[0]
             # If not vertical or horizontal
-            if abs(line_angle - 90) > 5 or abs(line_angle) > 5:
+            if abs(line_angle - 90) > 10 or abs(line_angle) > 10:
                 continue
             intersections_point = self.intersection(line_slope, line_y_intercept, centerline_slope, centerline_y_intercept)
 
@@ -148,6 +148,7 @@ class CameraTracking:
                 # Find y intercept of bounced line
                 bounce_y_intercept = intersection_point[1] * 1.0 - bounce_slope * intersection_point[0]
                 path_lines.append( [ (0, int(bounce_y_intercept)), (int(self.WIDTH - 1), int(bounce_slope * (self.WIDTH - 1) + bounce_y_intercept)) ] )
+                print path_lines[len(path_lines) - 1]
 
         return path_lines
 
@@ -175,10 +176,6 @@ class CameraTracking:
         avg_angle = (line_angle + line2_angle) / 2
         if avg_angle > 89 and avg_angle < 91:
             avg_angle = 89.9
-
-        print 'Average angle: ' + str(avg_angle)
-        print 'Line1 angle: ' + str(line_angle)
-        print 'Line2 angle: ' + str(line2_angle)
 
         # Get the perp line slope
         line1_perp_slope = (line[2] - line[0]) / (line[1] - line[3])

@@ -32,14 +32,14 @@ def validate_circles(frame_list, num_overlap):
         intersect = combo[0]
         for i in range(len(combo)):
             intersect = compute_overlap(intersect,combo[i])
-        result.append(intersect)
+        result.extend(intersect)
     return filter_circles(result)
 
 
 def filter_circles(lst):
     res = []
     for item in lst:
-        if not in_list(item, lst):
+        if not in_list(item, res):
             res.append(item)
     return res
 
@@ -57,9 +57,9 @@ def compute_overlap(lst1, lst2):
     return res
 
 def average(c1, c2):
-    return Circle([(c1.x+c2.x)/2, (c1.y+c2.y)/2, (c1.radius+c2.radius)/2])
+    return Circle([int((c1.x+c2.x)/2), int((c1.y+c2.y)/2), int((c1.radius+c2.radius)/2)])
 
-def validate_lines():
+def validate_lines(frame_list):
     pass
 
 delta_x = 5

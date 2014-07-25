@@ -20,6 +20,10 @@ settings_vars = [
     'cue_line_dist_max',
     'cue_line_dist_min',
     'circle_validator_frames',
+    'circle_validator_overlap',
+    'circle_validator_delta_x',
+    'circle_validator_delta_y',
+    'circle_validator_delta_radius',
     'line_validator_frames',
 ]
 
@@ -41,7 +45,7 @@ def main():
     root.mainloop()
 
 def initWindow(root):
-    root.geometry('300x600+100+100')
+    root.geometry('400x700+100+100')
     root.title('Live Pool Aid')
 
 def initUI(root):

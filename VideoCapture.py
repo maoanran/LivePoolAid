@@ -12,14 +12,14 @@ class CameraTracking:
     HEIGHT = 500
     WIDTH = HEIGHT * 16 / 9
     callback_queue = Queue.Queue()
-   
+
     vid = cv2.VideoCapture(0)
-    
+
     canny_threshold1 = 50
     canny_threshold2 = 150
     canny_apertureSize = 3
     canny_L2gradient = True
-    
+
     hough_circles_dp = 1
     hough_circles_minDist = 50
     hough_circles_param1 = 70
@@ -30,7 +30,7 @@ class CameraTracking:
     hough_lines_threshold = 100
     hough_lines_minLineLength = 10
     hough_lines_minLineGap = 10
-    
+
 
     def update_settings(self, **kwargs):
         for key, value in kwargs.iteritems():
@@ -49,7 +49,7 @@ class CameraTracking:
             for circle in circles[0]:
                 cv2.circle(image_small, (circle[0], circle[1]), circle[2], color, thickness=2, lineType=4, shift=0)
                 cv2.circle(color_dst, (circle[0], circle[1]), circle[2], color, thickness=2, lineType=4, shift=0)
-        
+
         lines = cv2.HoughLinesP(edges, hough_lines_rho, hough_lines_theta, threshold=self.hough_lines_threshold, minLineLength=self.hough_lines_minLineLength, maxLineGap=self.hough_lines_maxLineGap)
         if lines != None and len(lines) > 0 and len(lines[0]) > 0:
             for line in lines[0]:
@@ -58,12 +58,12 @@ class CameraTracking:
         self.show_image(img1=image_small, img2=color_dst)
         #cv2.imshow('video capture', image_small)
         #cv2.imshow('edge detection', color_dst)
-    
+
     def show_image(self, **kwargs):
         for key, value in kwargs.iteritems():
             cv2.imshow(key, value)
         cv2.waitKey(10)
-    
+
     def main_loop():
         try:
             callback = callback_queue.get(false)

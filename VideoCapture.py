@@ -20,13 +20,13 @@ class CameraTracking:
     canny_apertureSize = 3
     canny_L2gradient = True
     
-    show_circles = True
+    show_circles = False
     hough_circles_dp = 1
     hough_circles_minDist = 50
     hough_circles_param1 = 70
     hough_circles_param2 = 40
 
-    show_lines = True
+    show_lines = False
     hough_lines_rho = 1
     hough_lines_theta = cv.CV_PI / 180
     hough_lines_threshold = 100

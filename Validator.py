@@ -1,4 +1,4 @@
-from itertools import combinations
+from itertools import combinations, product
 
 class Validator:
     frame_list = []
@@ -9,7 +9,7 @@ class Validator:
        self.function = function
 
     def submit_frame(self, frame):
-        self.frame_list.insert(0, set(frame))
+        self.frame_list.insert(0, frame)
         if len(self.frame_list) > self.num_frames:
             self.frame_list.pop()
 
@@ -27,10 +27,37 @@ class Validator:
         self.num_overlap = num_overlap
 
 def validate_circles(frame_list, num_overlap):
-    result = set()
+    result = []
     for combo in combinations(frame_list, num_overlap):
-        result = result | set.intersection(*combo)
-    return result
+        intersect = combo[0]
+        for i in range(len(combo)):
+            intersect = compute_overlap(intersect,combo[i])
+        result.append(intersect)
+    return filter_circles(result)
+
+
+def filter_circles(lst):
+    res = []
+    for item in lst:
+        if not in_list(item, lst):
+            res.append(item)
+    return res
+
+def in_list(item, lst):
+    for other in lst:
+        if item == other:
+            return True
+    return False
+
+def compute_overlap(lst1, lst2):
+    res = []
+    for pair in product(lst1, lst2):
+        if pair[0] == pair[1]:
+            res.append(average(pair[0], pair[1]))
+    return res
+
+def average(c1, c2):
+    return Circle([(c1.x+c2.x)/2, (c1.y+c2.y)/2, (c1.radius+c2.radius)/2])
 
 def validate_lines():
     pass

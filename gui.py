@@ -25,6 +25,7 @@ settings_vars = [
     'circle_validator_delta_y',
     'circle_validator_delta_radius',
     'line_validator_frames',
+    'line_validator_overlap',
 ]
 
 settings = []
@@ -45,7 +46,7 @@ def main():
     root.mainloop()
 
 def initWindow(root):
-    root.geometry('400x700+100+100')
+    root.geometry('400x800+100+100')
     root.title('Live Pool Aid')
 
 def initUI(root):

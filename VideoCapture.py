@@ -52,9 +52,10 @@ class CameraTracking:
     circle_validator_delta_radius = 3
 
     line_validator_frames = 2
+    line_validator_overlap = 2
 
     circle_validator = Validator.Validator(circle_validator_frames, circle_validator_overlap)
-    line_validator = Validator.Validator(Validator.validate_lines, line_validator_frames)
+    line_validator = Validator.Validator(line_validator_frames, line_validator_overlap)
 
     def update_settings(self, **kwargs):
         for key, value in kwargs.iteritems():
@@ -63,6 +64,7 @@ class CameraTracking:
     def process_video(self):
         retval, image =  self.vid.read()
         image_small = cv2.resize(image, (self.WIDTH, self.HEIGHT))
+        projection = cv.CreateImage((self.WIDTH, self.HEIGHT), cv2.IPL_DEPTH_32F, 3)
 
         edges = cv2.Canny(image_small, self.canny_threshold1, self.canny_threshold2, apertureSize=self.canny_apertureSize, L2gradient=self.canny_L2gradient)
         color_dst = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
@@ -87,9 +89,11 @@ class CameraTracking:
                 for circle in circles_to_draw:
                     cv2.circle(image_small, (circle.x, circle.y), circle.radius, green, thickness=2, lineType=4, shift=0)
                     cv2.circle(color_dst, (circle.x, circle.y), circle.radius, green, thickness=2, lineType=4, shift=0)
+                    cv2.circle(projection, (circle.x, circle.y), circle.radius, blue, thickness=2, lineType=4, shift=0)
                 cue_ball = self.find_cue_ball(image_small, circles_to_draw)
                 cv2.circle(image_small, (cue_ball.x, cue_ball.y), cue_ball.radius, red, thickness=2, lineType=4, shift=0)
                 cv2.circle(color_dst, (cue_ball.x, cue_ball.y), cue_ball.radius, red, thickness=2, lineType=4, shift=0)
+
 
         if self.show_lines:
             lines = cv2.HoughLinesP(edges, self.hough_lines_rho, self.hough_lines_theta,
@@ -107,12 +111,11 @@ class CameraTracking:
                 centerline = self.create_center_line(cue_stick["line1"], cue_stick["line2"])
                 cv2.line(image_small, centerline[0], centerline[1], red, thickness=2, lineType=8, shift=0)
                 cv2.line(color_dst, centerline[0], centerline[1], red, thickness=2, lineType=8, shift=0)
+                cv2.line(projection, centerline[0], centerline[1], green, thickness=2, lineType=8, shift=0)
                 cv2.rectangle(image_small, cue_stick["point1"], cue_stick["point2"], blue, thickness=2, lineType=8, shift=0)
                 cv2.rectangle(color_dst, cue_stick["point1"], cue_stick["point2"], blue, thickness=2, lineType=8, shift=0)
 
-        gray = cv2.cvtColor(image_small, cv2.COLOR_BGR2GRAY)
-
-        return {"Original": image_small, "Edge Detection": color_dst, "Grayscale":gray}
+        return {"Original": image_small, "Edge Detection": color_dst}
 
     def create_center_line(self, line, line2):
         point1 = (line[0], line[1])

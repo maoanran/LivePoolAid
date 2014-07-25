@@ -29,8 +29,7 @@ class CameraTracking:
     hough_lines_theta = cv.CV_PI / 180
     hough_lines_threshold = 100
     hough_lines_minLineLength = 10
-    hough_lines_minLineGap = 10
-
+    hough_lines_maxLineGap = 10
 
     def update_settings(self, **kwargs):
         for key, value in kwargs.iteritems():
@@ -40,7 +39,7 @@ class CameraTracking:
         retval, image =  self.vid.read()
         image_small = cv2.resize(image, (self.WIDTH, self.HEIGHT))
 
-        edges = cv2.Canny(image_small, self.canny_threshold1, self.canny_threshold2, self.canny_apertureSize, self.canny_L2gradient)
+        edges = cv2.Canny(image_small, self.canny_threshold1, self.canny_threshold2, apertureSize=self.canny_apertureSize, L2gradient=self.canny_L2gradient)
         color_dst = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
 
         #gray = cv2.cvtColor(image_small, cv2.COLOR_BGR2GRAY)
@@ -49,8 +48,7 @@ class CameraTracking:
             for circle in circles[0]:
                 cv2.circle(image_small, (circle[0], circle[1]), circle[2], color, thickness=2, lineType=4, shift=0)
                 cv2.circle(color_dst, (circle[0], circle[1]), circle[2], color, thickness=2, lineType=4, shift=0)
-
-        lines = cv2.HoughLinesP(edges, hough_lines_rho, hough_lines_theta, threshold=self.hough_lines_threshold, minLineLength=self.hough_lines_minLineLength, maxLineGap=self.hough_lines_maxLineGap)
+        lines = cv2.HoughLinesP(edges, self.hough_lines_rho, self.hough_lines_theta, threshold=self.hough_lines_threshold, minLineLength=self.hough_lines_minLineLength, maxLineGap=self.hough_lines_maxLineGap)
         if lines != None and len(lines) > 0 and len(lines[0]) > 0:
             for line in lines[0]:
                 cv2.line(image_small, (line[0], line[1]), (line[2], line[3]), color, thickness=2, lineType=8, shift=0)

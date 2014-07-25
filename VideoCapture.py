@@ -12,9 +12,9 @@ class CameraTracking:
     HEIGHT = 500
     WIDTH = HEIGHT * 16 / 9
     callback_queue = Queue.Queue()
-   
+
     vid = cv2.VideoCapture(0)
-    
+
     canny_threshold1 = 50
     canny_threshold2 = 150
     canny_apertureSize = 3
@@ -32,7 +32,6 @@ class CameraTracking:
     hough_lines_threshold = 100
     hough_lines_minLineLength = 10
     hough_lines_maxLineGap = 10
-    
 
     def update_settings(self, **kwargs):
         for key, value in kwargs.iteritems():
@@ -68,7 +67,7 @@ class CameraTracking:
         self.show_image(img1=image_small, img2=color_dst)
         #cv2.imshow('video capture', image_small)
         #cv2.imshow('edge detection', color_dst)
-    
+
     def show_image(self, **kwargs):
         for key, value in kwargs.iteritems():
             cv2.imshow(key, value)

@@ -112,17 +112,32 @@ class CameraTracking:
         point3 = (line2[0], line2[1])
         point4 = (line2[2], line2[3])
 
-        dist_1_3 = self.distance(point1, point3)
-        dist_1_4 = self.distance(point1, point4)
+        line_angle = math.degrees(math.atan( (line[1] - line[3]) / (line[0] - line[2]) ))
+        line2_angle = math.degrees(math.atan( (line2[1] - line2[3]) / (line2[0] - line2[2]) ))
+        avg_angle = (line_angle + line2_angle) / 2
 
-        if dist_1_3 < dist_1_4:
-            mid1 = ((point1[0] + point3[0]) / 2, (point1[1] + point3[1]) / 2)
-            mid2 = ((point2[0] + point4[0]) / 2, (point2[1] + point2[1]) / 2)
-            return [mid1, mid2]
-        else:
-            mid1 = ((point1[0] + point4[0]) / 2, (point1[1] + point4[1]) / 2)
-            mid2 = ((point2[0] + point3[0]) / 2, (point2[1] + point3[1]) / 2)
-            return [mid1, mid2]
+        # Get the perp line slope
+        line1_perp_slope = (line[2] - line[0]) / (line[1] - line[3])
+        line2_slope = (line[1] - line[3]) / (line[0] - line[2])
+
+        # Find intersection point between line through some point on line1 with perp slope and line 2
+        line1_perp_y_intercept = point1[1] - line1_perp_slope * point1[0]
+        line2_y_intercept = point3[1] - line2_slope * point3[0]
+        x = ((line2_y_intercept - line1_perp_y_intercept) / (line1_perp_slope - line2_slope))
+        y = line1_perp_slope * x + line1_perp_y_intercept
+
+        # This point is the point where the perp line intersects line2
+        intersection_point = (x, y)
+
+        # Find midpoint of perp line
+        mid_point = ((point1[0] + intersection_point[0]) / 2, (point1[1] + intersection_point[1]) / 2)
+
+        # Calculate stuff for line function
+        mid_point_slope = math.tan(avg_angle)
+        mid_point_y_intercept = mid_point[1] - mid_point_slope * mid_point[0]
+
+        # Return line that stretches screen. y = m * x + b
+        return [(0, mid_point_y_intercept), (WIDTH - 1, mid_point_slope * (WIDTH - 1) + mid_point_y_intercept)]
 
     def find_cue_stick(self, lines, cue_ball):
         for line in lines:
@@ -130,8 +145,6 @@ class CameraTracking:
                 if not numpy.array_equal(line, line2):
                     line_angle = math.degrees(math.atan( (line[1] - line[3]) / (line[0] - line[2]) ))
                     line2_angle = math.degrees(math.atan( (line2[1] - line2[3]) / (line2[0] - line2[2]) ))
-                    #line_slope = (line[1] - line[3]) / (line[0] - line[2])
-                    #line2_slope = (line2[1] - line2[3]) / (line2[0] - line2[2])
                     if abs(line_angle - line2_angle) < self.cue_line_slope:
                         dist1 = self.distance((line[0], line[1]), (line2[0], line2[1]))
                         dist2 = self.distance((line[0], line[1]), (line2[2], line2[3]))

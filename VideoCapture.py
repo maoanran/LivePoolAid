@@ -133,6 +133,7 @@ class CameraTracking:
         path_lines = []
         centerline_slope = (centerline[0][1] - centerline[1][1]) * 1.0 / (centerline[0][0] - centerline[1][0])
         centerline_y_intercept = centerline[0][1] * 1.0 - centerline_slope * centerline[0][0]
+        bounce_slope = -centerline_slope
 
         for line in lines:
             line_slope = (line[1] - line[3]) * 1.0 / (line[0] - line[2])
@@ -144,9 +145,12 @@ class CameraTracking:
             intersections_point = self.intersection(line_slope, line_y_intercept, centerline_slope, centerline_y_intercept)
 
             if(intersection_point[0] >= 0 and intersection_point[0] < (self.WIDTH - 1) and intersection_point[1] >= 0 and intersection_point[1] < (self.HEIGHT - 1)):
-                path_lines.append(line)
+                # Find y intercept of bounced line
+                bounce_y_intercept = intersection_point[1] * 1.0 - bounce_slope * intersection_point[0]
+                path_lines.append( [ (0, int(bounce_y_intercept)), (int(self.WIDTH - 1), int(bounce_slope * (self.WIDTH - 1) + bounce_y_intercept)) ] )
+
         return path_lines
-        
+
     def rotateImage(self, image, angle):
         image_center = tuple(numpy.array(image.shape) / 2)
         rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)

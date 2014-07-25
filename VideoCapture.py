@@ -54,6 +54,8 @@ class CameraTracking:
     line_validator_frames = 2
     line_validator_overlap = 2
 
+    rotate_angle = 0
+
     circle_validator = Validator.Validator(circle_validator_frames, circle_validator_overlap)
     line_validator = Validator.Validator(line_validator_frames, line_validator_overlap)
 
@@ -123,10 +125,18 @@ class CameraTracking:
                 cv2.rectangle(image_small, cue_stick["point1"], cue_stick["point2"], blue, thickness=2, lineType=8, shift=0)
                 cv2.rectangle(color_dst, cue_stick["point1"], cue_stick["point2"], blue, thickness=2, lineType=8, shift=0)
 
-        return {"Original": image_small, "Edge Detection": color_dst}
+        #rotated = self.rotateImage(image_small, self.rotate_angle)
+
+        return {"Original": image_small, "Edge Detection": color_dst, '''"Rotated": rotated'''}
 
     def create_path_lines(self, centerline, lines):
         return []
+
+    def rotateImage(self, image, angle):
+        image_center = tuple(numpy.array(image.shape) / 2)
+        rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
+        result = cv2.warpAffine(image, rot_mat, image.shape, flags=cv2.INTER_LINEAR)
+        return result
 
 
     def intersection(self, m1, b1, m2, b2):

@@ -26,6 +26,7 @@ settings_vars = [
     'circle_validator_delta_radius',
     'line_validator_frames',
     'line_validator_overlap',
+    'rotate_angle',
 ]
 
 settings = []

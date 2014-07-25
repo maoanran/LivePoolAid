@@ -131,7 +131,7 @@ class CameraTracking:
 
     def create_path_lines(self, centerline, lines):
         path_lines = []
-        centerline_slope = (centerline[0][1] - centerline[1][1]) * 1.0 / (centerline[0][0] - centerline[1][0])
+        centerline_slope = min(10000, (centerline[0][1] - centerline[1][1]) * 1.0 / (centerline[0][0] - centerline[1][0]) )
         centerline_y_intercept = centerline[0][1] * 1.0 - centerline_slope * centerline[0][0]
         bounce_slope = centerline_slope * -1.0
 
@@ -142,6 +142,7 @@ class CameraTracking:
             # If not vertical or horizontal
             if abs(line_angle - 90) > 10 or abs(line_angle) > 10:
                 continue
+
             intersections_point = self.intersection(line_slope, line_y_intercept, centerline_slope, centerline_y_intercept)
 
             if(intersection_point[0] >= 0 and intersection_point[0] < (self.WIDTH - 1) and intersection_point[1] >= 0 and intersection_point[1] < (self.HEIGHT - 1)):

@@ -37,8 +37,18 @@ def initWindow(root):
     root.title('Live Pool Aid')
 
 def initUI(root):
+    global lines_checkbox
+    global circles_checkbox
+    lines_checkbox = IntVar()
+    circles_checkbox = IntVar()
+
     for i in range(len(settings_vars)):
         settings.append(Setting(root, i, settings_vars[i]))
+
+    Label(root, text='Lines').grid(row=len(settings_vars))
+    Label(root, text='Circles').grid(row=len(settings_vars) + 1)
+    Checkbutton(root, variable=lines_checkbox).grid(row=len(settings_vars), column=1)
+    Checkbutton(root, variable=circles_checkbox).grid(row=len(settings_vars) + 1, column=1)
 
 def execute_computer_vision():
     global tracker
@@ -48,11 +58,16 @@ def execute_computer_vision():
 
 def update_settings():
     global tracker
+    global lines_checkbox
+    global circles_checkbox
     params = {}
     for setting in settings:
         if setting.entry.get() != '' and is_number(setting.entry.get()):
             params[setting.var_name] = setting.entry.get()
     tracker.update_settings(**params)
+
+    tracker.set_lines(not not (lines_checkbox.get()))
+    tracker.set_circles(not not (circles_checkbox.get()))
 
 def is_number(s):
     try:

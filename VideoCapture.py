@@ -145,7 +145,7 @@ class CameraTracking:
         mid_point_y_intercept = mid_point[1] - mid_point_slope * mid_point[0]
 
         # Return line that stretches screen. y = m * x + b
-        return [(0, mid_point_y_intercept), (WIDTH - 1, mid_point_slope * (WIDTH - 1) + mid_point_y_intercept)]
+        return [(0, int(mid_point_y_intercept)), (int(self.WIDTH - 1), int(mid_point_slope * (self.WIDTH - 1) + mid_point_y_intercept))]
 
     def find_cue_stick(self, lines, cue_ball):
         for line in lines:

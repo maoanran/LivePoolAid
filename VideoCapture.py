@@ -41,7 +41,7 @@ class CameraTracking:
     hough_lines_minLineLength = 10
     hough_lines_maxLineGap = 10
 
-    cue_line_slope = .2
+    cue_line_slope = 10
     cue_line_dist_max = 10
     cue_line_dist_min = 2
 
@@ -128,9 +128,11 @@ class CameraTracking:
         for line in lines:
             for line2 in lines:
                 if not numpy.array_equal(line, line2):
-                    line_slope = (line[1] - line[3]) / (line[0] - line[2])
-                    line2_slope = (line2[1] - line2[3]) / (line2[0] - line2[2])
-                    if abs(line_slope - line2_slope) < self.cue_line_slope:
+                    line_angle = math.degrees(math.atan( (line[1] - line[3]) / (line[0] - line[2]) ))
+                    line2_angle = math.degrees(math.atan( (line2[1] - line2[3]) / (line2[0] - line2[2]) ))
+                    #line_slope = (line[1] - line[3]) / (line[0] - line[2])
+                    #line2_slope = (line2[1] - line2[3]) / (line2[0] - line2[2])
+                    if abs(line_angle - line2_angle) < self.cue_line_slope:
                         dist1 = self.distance((line[0], line[1]), (line2[0], line2[1]))
                         dist2 = self.distance((line[0], line[1]), (line2[2], line2[3]))
                         dist3 = self.distance((line[2], line[3]), (line2[0], line2[1]))

@@ -7,6 +7,7 @@ import math
 import Validator
 from Validator import Circle
 import pdb
+import numpy as np
 
 green = (0, 255, 0) #green
 red = (0, 0, 255) #red
@@ -30,27 +31,27 @@ class CameraTracking:
     hough_circles_minDist = 50
     hough_circles_param1 = 40
     hough_circles_param2 = 20
-    hough_circles_minRadius = 5
-    hough_circles_maxRadius = 30
+    hough_circles_minRadius = 7
+    hough_circles_maxRadius = 17
 
     show_lines = True
     hough_lines_rho = 1
     hough_lines_theta = numpy.pi / 180
-    hough_lines_threshold = 100
-    hough_lines_minLineLength = 10
+    hough_lines_threshold = 160
+    hough_lines_minLineLength = 30
     hough_lines_maxLineGap = 10
 
     cue_line_slope = 10
     cue_line_dist_max = 10
     cue_line_dist_min = 2
 
-    circle_validator_frames = 2
+    circle_validator_frames = 5
     circle_validator_overlap = 2
     circle_validator_delta_x = 5
     circle_validator_delta_y = 5
     circle_validator_delta_radius = 3
 
-    line_validator_frames = 2
+    line_validator_frames = 5
     line_validator_overlap = 2
 
     rotate_angle = 0
@@ -66,16 +67,17 @@ class CameraTracking:
         retval, image =  self.vid.read()
 
         image_small = cv2.resize(image, (self.WIDTH, self.HEIGHT))
-        #projection = cv.CreateImage((self.WIDTH, self.HEIGHT), cv2.IPL_DEPTH_32F, 3)
+        # image_small = image_small[200:400, 100:300]
+        # projection = cv.CreateImage((self.WIDTH, self.HEIGHT), cv2.IPL_DEPTH_32F, 3)
 
         edges = cv2.Canny(image_small, self.canny_threshold1, self.canny_threshold2, apertureSize=self.canny_apertureSize, L2gradient=self.canny_L2gradient)
         color_dst = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
 
 
-        up_left = (285, 45)
-        up_right = (570, 45)
-        down_left = (-25, 425)
-        down_right = (785, 425)
+        up_left = (320, 10)
+        up_right = (610, 5)
+        down_left = (-30, 454)
+        down_right = (870, 460)
         cv2.line(image_small, up_left, up_right, blue, thickness=2, lineType=8, shift=0)
         cv2.line(image_small, up_left, down_left, blue, thickness=2, lineType=8, shift=0)
         cv2.line(image_small, down_right, up_right, blue, thickness=2, lineType=8, shift=0)
@@ -98,10 +100,10 @@ class CameraTracking:
             self.circle_validator.submit_frame(circle_class_list)
             circles_to_draw = self.circle_validator.validate()
             if len(circles_to_draw) > 0:
-                for circle in circles_to_draw:
-                    cv2.circle(image_small, (circle.x, circle.y), circle.radius, green, thickness=2, lineType=4, shift=0)
-                    cv2.circle(color_dst, (circle.x, circle.y), circle.radius, green, thickness=2, lineType=4, shift=0)
-                    # cv2.circle(projection, (circle.x, circle.y), circle.radius, blue, thickness=2, lineType=4, shift=0)
+                # for circle in circles_to_draw:
+                #     cv2.circle(image_small, (circle.x, circle.y), circle.radius, green, thickness=2, lineType=4, shift=0)
+                #     cv2.circle(color_dst, (circle.x, circle.y), circle.radius, green, thickness=2, lineType=4, shift=0)
+                #     cv2.circle(projection, (circle.x, circle.y), circle.radius, blue, thickness=2, lineType=4, shift=0)
                 cue_ball = self.find_cue_ball(image_small, circles_to_draw)
                 cv2.circle(image_small, (cue_ball.x, cue_ball.y), cue_ball.radius, red, thickness=2, lineType=4, shift=0)
                 cv2.circle(color_dst, (cue_ball.x, cue_ball.y), cue_ball.radius, red, thickness=2, lineType=4, shift=0)
@@ -114,14 +116,22 @@ class CameraTracking:
             lines = None
 
         if numpy.all(lines != None) and len(lines) > 0 and len(lines[0]) > 0:
-            for line in lines[0]:
-                cv2.line(image_small, (line[0], line[1]), (line[2], line[3]), green, thickness=2, lineType=8, shift=0)
-                cv2.line(color_dst, (line[0], line[1]), (line[2], line[3]), green, thickness=2, lineType=8, shift=0)
+            for lines2 in lines:
+                for line in lines2:
+                    cv2.line(image_small, (line[0], line[1]), (line[2], line[3]), green, thickness=2, lineType=8, shift=0)
+                    cv2.line(color_dst, (line[0], line[1]), (line[2], line[3]), green, thickness=2, lineType=8, shift=0)
 
-            cue_stick = self.find_cue_stick(lines[0], None)
+            lines0 = []
+            for lines1 in lines:
+                for line in lines1:
+                    lines0.append(line)
+
+            lines0 = numpy.array(lines0)
+
+            cue_stick = self.find_cue_stick(lines0, None)
             if cue_stick != None:
                 centerline = self.create_center_line(cue_stick["line1"], cue_stick["line2"])
-                path_lines = self.create_path_lines(centerline, lines[0])
+                path_lines = self.create_path_lines(centerline, lines0)
 
                 # Draw path
                 for p_line in path_lines:
@@ -148,15 +158,17 @@ class CameraTracking:
             line_angle = math.degrees(math.atan(line_slope))
             line_y_intercept = line[1] * 1.0 - line_slope * line[0]
             # If not vertical or horizontal
-            if abs(line_angle - 90) > 10 or abs(line_angle) > 10:
-                continue
+            # if abs(line_angle - 90) > 10 or abs(line_angle) > 10:
+            #     continue
+
+            print line_slope, line_y_intercept, centerline_slope, centerline_y_intercept
 
             intersection_point = self.intersection(line_slope, line_y_intercept, centerline_slope, centerline_y_intercept)
 
             if(intersection_point[0] >= 0 and intersection_point[0] < (self.WIDTH - 1) and intersection_point[1] >= 0 and intersection_point[1] < (self.HEIGHT - 1)):
                 # Find y intercept of bounced line
                 bounce_y_intercept = intersection_point[1] * 1.0 - bounce_slope * intersection_point[0]
-                path_lines.append( [ (0, int(bounce_y_intercept)), (int(self.WIDTH - 1), int(bounce_slope * (self.WIDTH - 1) + bounce_y_intercept)) ] )
+                path_lines.append( [ (0, 454), (int(self.WIDTH - 1),0) ] )
                 print path_lines[len(path_lines) - 1]
 
         return path_lines
@@ -248,6 +260,31 @@ class CameraTracking:
                 brightest_circle_brightness = avg_brightness
                 brightest_circle = circle
         return brightest_circle
+
+
+    def find_cue_ball_color(self, image, circles):
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+        # define range of white color in HSV
+        # change it according to your need !
+        lower_white = np.array([0,0,240], dtype=np.uint8)
+        upper_white = np.array([180,30,255], dtype=np.uint8)
+
+        # Threshold the HSV image to get only white colors
+        mask = cv2.inRange(hsv, lower_white, upper_white)
+        # Bitwise-AND mask and original image
+        res = cv2.bitwise_and(frame,frame, mask= mask)
+
+        gray = cv2.cvtColor(res, cv2.COLOR_BGR2GRAY)
+        brightest_circle = None
+        brightest_circle_brightness = 0
+        for circle in circles:
+            avg_brightness = self.calculate_avg_brightness(gray, circle)
+            if avg_brightness >= brightest_circle_brightness:
+                brightest_circle_brightness = avg_brightness
+                brightest_circle = circle
+        return brightest_circle
+
 
     def calculate_avg_brightness(self, image, circle):
         x_min = max(int(circle.x)-int(circle.radius), 0)

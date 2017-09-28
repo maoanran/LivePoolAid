@@ -19,7 +19,7 @@ class CameraTracking:
     WIDTH = HEIGHT * 16 / 9
     callback_queue = Queue.Queue()
 
-    vid = cv2.VideoCapture(1)
+    vid = cv2.VideoCapture(0)
 
     canny_threshold1 = 150
     canny_threshold2 = 200
@@ -153,23 +153,31 @@ class CameraTracking:
         centerline_y_intercept = centerline[0][1] * 1.0 - centerline_slope * centerline[0][0]
         bounce_slope = centerline_slope * -1.0
 
-        for line in lines:
-            line_slope = (line[1] - line[3]) * 1.0 / (line[0] - line[2])
-            line_angle = math.degrees(math.atan(line_slope))
-            line_y_intercept = line[1] * 1.0 - line_slope * line[0]
-            # If not vertical or horizontal
-            # if abs(line_angle - 90) > 10 or abs(line_angle) > 10:
-            #     continue
+        # for line in lines:
+        down_left_x = -30
+        down_left_y = 454
+        down_right_x = 870
+        down_right_y = 460
+        line = [down_left_x, down_left_y, down_right_x, down_right_y]
 
-            print line_slope, line_y_intercept, centerline_slope, centerline_y_intercept
+        line_slope = (line[1] - line[3]) * 1.0 / (line[0] - line[2])
+        line_angle = math.degrees(math.atan(line_slope))
+        line_y_intercept = line[1] * 1.0 - line_slope * line[0]
+        # If not vertical or horizontal
+        # if abs(line_angle - 90) > 10 or abs(line_angle) > 10:
+        #     continue
 
-            intersection_point = self.intersection(line_slope, line_y_intercept, centerline_slope, centerline_y_intercept)
+        print line_slope, line_y_intercept, centerline_slope, centerline_y_intercept
 
-            if(intersection_point[0] >= 0 and intersection_point[0] < (self.WIDTH - 1) and intersection_point[1] >= 0 and intersection_point[1] < (self.HEIGHT - 1)):
-                # Find y intercept of bounced line
-                bounce_y_intercept = intersection_point[1] * 1.0 - bounce_slope * intersection_point[0]
-                path_lines.append( [ (0, 454), (int(self.WIDTH - 1),0) ] )
-                print path_lines[len(path_lines) - 1]
+        intersection_point = self.intersection(line_slope, line_y_intercept, centerline_slope, centerline_y_intercept)
+
+        if (intersection_point[0] >= 0 and intersection_point[0] < (self.WIDTH - 1) and intersection_point[1] >= 0 and
+                    intersection_point[1] < (self.HEIGHT - 1)):
+            # Find y intercept of bounced line
+            bounce_y_intercept = intersection_point[1] * 1.0 - bounce_slope * intersection_point[0]
+            bounce_x_intercept = intersection_point[0] * 1.0 - intersection_point[1] / bounce_slope
+            path_lines.append([(int(intersection_point[0]), 457), (int(bounce_x_intercept), 0)])
+            print path_lines[len(path_lines) - 1]
 
         return path_lines
 

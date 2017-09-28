@@ -70,6 +70,16 @@ class CameraTracking:
         # image_small = image_small[200:400, 100:300]
         # projection = cv.CreateImage((self.WIDTH, self.HEIGHT), cv2.IPL_DEPTH_32F, 3)
 
+        pts1 = np.float32([[320, 10], [610, 5], [-30, 454] , [870,460]])
+        pts2 = np.float32([[0, 0], [888, 0], [0, 500] , [888 , 500]])
+
+        M = cv2.getPerspectiveTransform(pts1, pts2 )
+
+        dst = cv2.warpPerspective(image_small, M , (image_small.shape[1] , image_small.shape[0]))
+
+        return dst , dst
+
+
         edges = cv2.Canny(image_small, self.canny_threshold1, self.canny_threshold2, apertureSize=self.canny_apertureSize, L2gradient=self.canny_L2gradient)
         color_dst = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
 

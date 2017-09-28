@@ -1,5 +1,4 @@
 from threading import Thread
-from cv2 import cv
 import cv2
 import numpy
 import time
@@ -19,14 +18,14 @@ class CameraTracking:
     WIDTH = HEIGHT * 16 / 9
     callback_queue = Queue.Queue()
 
-    vid = cv2.VideoCapture(0)
+    vid = cv2.VideoCapture(1)
 
     canny_threshold1 = 150
     canny_threshold2 = 200
     canny_apertureSize = 3
     canny_L2gradient = True
 
-    show_circles = False
+    show_circles = True
     hough_circles_dp = 1
     hough_circles_minDist = 50
     hough_circles_param1 = 40
@@ -34,9 +33,9 @@ class CameraTracking:
     hough_circles_minRadius = 5
     hough_circles_maxRadius = 30
 
-    show_lines = False
+    show_lines = True
     hough_lines_rho = 1
-    hough_lines_theta = cv.CV_PI / 180
+    hough_lines_theta = numpy.pi / 180
     hough_lines_threshold = 100
     hough_lines_minLineLength = 10
     hough_lines_maxLineGap = 10
@@ -72,14 +71,24 @@ class CameraTracking:
         edges = cv2.Canny(image_small, self.canny_threshold1, self.canny_threshold2, apertureSize=self.canny_apertureSize, L2gradient=self.canny_L2gradient)
         color_dst = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
 
+
+        up_left = (285, 45)
+        up_right = (570, 45)
+        down_left = (-25, 425)
+        down_right = (785, 425)
+        cv2.line(image_small, up_left, up_right, blue, thickness=2, lineType=8, shift=0)
+        cv2.line(image_small, up_left, down_left, blue, thickness=2, lineType=8, shift=0)
+        cv2.line(image_small, down_right, up_right, blue, thickness=2, lineType=8, shift=0)
+        cv2.line(image_small, down_right, down_left, blue, thickness=2, lineType=8, shift=0)
+
         if self.show_circles:
-            circles = cv2.HoughCircles(edges, cv.CV_HOUGH_GRADIENT, self.hough_circles_dp, self.hough_circles_minDist,
+            circles = cv2.HoughCircles(edges, cv2.HOUGH_GRADIENT, self.hough_circles_dp, self.hough_circles_minDist,
                     param1=self.hough_circles_param1, param2=self.hough_circles_param2, minRadius=self.hough_circles_minRadius,
                     maxRadius=self.hough_circles_maxRadius)
         else:
             circles = None
 
-        if circles != None and len(circles) > 0 and len(circles[0]) > 0:
+        if numpy.all(circles != None) and len(circles) > 0 and len(circles[0]) > 0:
             circle_class_list = list(Circle(circle) for circle in circles[0])
             Validator.delta_x = self.circle_validator_delta_x
             Validator.delta_y = self.circle_validator_delta_y
@@ -104,7 +113,7 @@ class CameraTracking:
         else:
             lines = None
 
-        if lines != None and len(lines) > 0 and len(lines[0]) > 0:
+        if numpy.all(lines != None) and len(lines) > 0 and len(lines[0]) > 0:
             for line in lines[0]:
                 cv2.line(image_small, (line[0], line[1]), (line[2], line[3]), green, thickness=2, lineType=8, shift=0)
                 cv2.line(color_dst, (line[0], line[1]), (line[2], line[3]), green, thickness=2, lineType=8, shift=0)
@@ -126,8 +135,7 @@ class CameraTracking:
                 cv2.rectangle(color_dst, cue_stick["point1"], cue_stick["point2"], blue, thickness=2, lineType=8, shift=0)
 
         #rotated = self.rotateImage(image_small, self.rotate_angle)
-
-        return {"Original": image_small, "Edge Detection": color_dst}
+        return image_small , color_dst
 
     def create_path_lines(self, centerline, lines):
         path_lines = []
@@ -143,7 +151,7 @@ class CameraTracking:
             if abs(line_angle - 90) > 10 or abs(line_angle) > 10:
                 continue
 
-            intersections_point = self.intersection(line_slope, line_y_intercept, centerline_slope, centerline_y_intercept)
+            intersection_point = self.intersection(line_slope, line_y_intercept, centerline_slope, centerline_y_intercept)
 
             if(intersection_point[0] >= 0 and intersection_point[0] < (self.WIDTH - 1) and intersection_point[1] >= 0 and intersection_point[1] < (self.HEIGHT - 1)):
                 # Find y intercept of bounced line
@@ -266,5 +274,15 @@ class CameraTracking:
 
 if __name__ == "__main__":
     tracker = CameraTracking()
-    while should_process:
-        tracker.process_video()
+
+    while (should_process):
+        original, frame = tracker.process_video()
+
+        cv2.imshow('image', original)
+        k = cv2.waitKey(20)
+
+        if (k & 0xff == ord('q')):
+            break
+
+    tracker.vid.release()
+    cv2.destroyAllWindows()

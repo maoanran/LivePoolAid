@@ -19,7 +19,9 @@ class CameraTracking:
     WIDTH = HEIGHT * 16 / 9
     callback_queue = Queue.Queue()
 
-    vid = cv2.VideoCapture(0)
+    vid = cv2.VideoCapture(1)
+
+    background = cv2.imread('background.jpg')
 
     canny_threshold1 = 150
     canny_threshold2 = 200
@@ -51,7 +53,7 @@ class CameraTracking:
     circle_validator_delta_y = 5
     circle_validator_delta_radius = 3
 
-    line_validator_frames = 5
+    line_validator_frames = 9
     line_validator_overlap = 2
 
     rotate_angle = 0
@@ -71,19 +73,28 @@ class CameraTracking:
         # projection = cv.CreateImage((self.WIDTH, self.HEIGHT), cv2.IPL_DEPTH_32F, 3)
 
 
-        pts1 = np.float32([[320, 10], [610, 5], [-30, 454] , [870,460]])
-        pts2 = np.float32([[0, 0], [888, 0], [0, 500] , [888 , 500]])
-
-        M = cv2.getPerspectiveTransform(pts1, pts2 )
-
-
-
-        image_small = cv2.warpPerspective(image_small, M , (image_small.shape[1] , image_small.shape[0]))
-
-
+        # pts1 = np.float32([[320, 10], [610, 5], [-30, 454] , [870,460]])
+        # pts2 = np.float32([[0, 0], [888, 0], [0, 500] , [888 , 500]])
+        #
+        # M = cv2.getPerspectiveTransform(pts1, pts2 )
+        #
+        #
+        #
+        # image_small = cv2.warpPerspective(image_small, M , (image_small.shape[1] , image_small.shape[0]))
 
 
-        edges = cv2.Canny(image_small, self.canny_threshold1, self.canny_threshold2, apertureSize=self.canny_apertureSize, L2gradient=self.canny_L2gradient)
+        image_sub = cv2.subtract(image_small , self.background)
+
+
+        # pts1 = np.float32([[320, 10], [610, 5], [-30, 454] , [870,460]])
+        # pts2 = np.float32([[0, 0], [888, 0], [0, 500] , [888 , 500]])
+        #
+        # M = cv2.getPerspectiveTransform(pts1, pts2 )
+        #
+        # image_small = cv2.warpPerspective(image_small, M , (image_small.shape[1] , image_small.shape[0]))
+        #
+        #
+        edges = cv2.Canny(image_sub, self.canny_threshold1, self.canny_threshold2, apertureSize=self.canny_apertureSize, L2gradient=self.canny_L2gradient)
         color_dst = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
 
 
@@ -95,6 +106,8 @@ class CameraTracking:
         # cv2.line(image_small, up_left, down_left, blue, thickness=2, lineType=8, shift=0)
         # cv2.line(image_small, down_right, up_right, blue, thickness=2, lineType=8, shift=0)
         # cv2.line(image_small, down_right, down_left, blue, thickness=2, lineType=8, shift=0)
+
+        # return color_dst, color_dst
 
         if self.show_circles:
             circles = cv2.HoughCircles(edges, cv2.HOUGH_GRADIENT, self.hough_circles_dp, self.hough_circles_minDist,
@@ -117,10 +130,18 @@ class CameraTracking:
                 #     cv2.circle(image_small, (circle.x, circle.y), circle.radius, green, thickness=2, lineType=4, shift=0)
                 #     cv2.circle(color_dst, (circle.x, circle.y), circle.radius, green, thickness=2, lineType=4, shift=0)
                 #     cv2.circle(projection, (circle.x, circle.y), circle.radius, blue, thickness=2, lineType=4, shift=0)
-                cue_ball = self.find_cue_ball(image_small, circles_to_draw)
+                cue_ball = self.find_cue_ball_color(image_small, circles_to_draw)
                 cv2.circle(image_small, (cue_ball.x, cue_ball.y), cue_ball.radius, red, thickness=2, lineType=4, shift=0)
                 cv2.circle(color_dst, (cue_ball.x, cue_ball.y), cue_ball.radius, red, thickness=2, lineType=4, shift=0)
 
+
+        pts1 = np.float32([[320, 10], [610, 5], [-30, 454] , [870,460]])
+        pts2 = np.float32([[0, 0], [888, 0], [0, 500] , [888 , 500]])
+
+        M = cv2.getPerspectiveTransform(pts1, pts2 )
+
+        image_small = cv2.warpPerspective(image_small, M , (image_small.shape[1] , image_small.shape[0]))
+        edges = cv2.warpPerspective(edges, M , (image_small.shape[1] , image_small.shape[0]))
 
         if self.show_lines:
             lines = cv2.HoughLinesP(edges, self.hough_lines_rho, self.hough_lines_theta,
@@ -220,6 +241,8 @@ class CameraTracking:
 
 
     def intersection(self, m1, b1, m2, b2):
+        if m1 - m2 == 0:
+            return ( 0 , 0)
         x = ((b2 - b1) / (m1- m2))
         y = m1 * x + b1
         return (x, y)
@@ -355,6 +378,7 @@ if __name__ == "__main__":
         original, frame = tracker.process_video()
 
         cv2.imshow('image', original)
+        # cv2.imwrite('background.jpg' , original)
         k = cv2.waitKey(20)
 
         if (k & 0xff == ord('q')):

@@ -70,24 +70,17 @@ class CameraTracking:
         # image_small = image_small[200:400, 100:300]
         # projection = cv.CreateImage((self.WIDTH, self.HEIGHT), cv2.IPL_DEPTH_32F, 3)
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 7195fa45ddcd431162f3e78531838b345c86c867
         pts1 = np.float32([[320, 10], [610, 5], [-30, 454] , [870,460]])
         pts2 = np.float32([[0, 0], [888, 0], [0, 500] , [888 , 500]])
 
         M = cv2.getPerspectiveTransform(pts1, pts2 )
 
-<<<<<<< HEAD
-        dst = cv2.warpPerspective(image_small, M , (image_small.shape[1] , image_small.shape[0]))
 
-        return dst , dst
-=======
+
         image_small = cv2.warpPerspective(image_small, M , (image_small.shape[1] , image_small.shape[0]))
 
-        # return dst , dst
->>>>>>> 7195fa45ddcd431162f3e78531838b345c86c867
+
 
 
         edges = cv2.Canny(image_small, self.canny_threshold1, self.canny_threshold2, apertureSize=self.canny_apertureSize, L2gradient=self.canny_L2gradient)
@@ -155,8 +148,8 @@ class CameraTracking:
 
                 # Draw path
                 for p_line in path_lines:
-                    cv2.line(image_small, p_line[0], p_line[1], blue, thickness=2, lineType=8, shift=0)
-                    cv2.line(color_dst, p_line[0], p_line[1], blue, thickness=2, lineType=8, shift=0)
+                    cv2.line(image_small, p_line[0], p_line[1], red, thickness=2, lineType=8, shift=0)
+                    cv2.line(color_dst, p_line[0], p_line[1], red, thickness=2, lineType=8, shift=0)
 
                 cv2.line(image_small, centerline[0], centerline[1], red, thickness=2, lineType=8, shift=0)
                 cv2.line(color_dst, centerline[0], centerline[1], red, thickness=2, lineType=8, shift=0)
@@ -179,22 +172,32 @@ class CameraTracking:
         bounce_slope = centerline_slope * -1.0
 
         # for line in lines:
+        up_left_x = 0
+        up_left_y = 0
         down_left_x = 0
-        down_left_y = 498
-        down_right_x = 885
-        down_right_y = 498
+        down_left_y = self.HEIGHT - 2
+        down_right_x = self.WIDTH - 3
+        down_right_y = self.HEIGHT - 2
         line = [down_left_x, down_left_y, down_right_x, down_right_y]
+        line2 = [up_left_x, up_left_y, down_left_x, down_left_y]
 
         line_slope = (line[1] - line[3]) * 1.0 / (line[0] - line[2])
+        line2_slope = (line2[1] - line2[3]) * 1.0 / (line2[0] - line2[2])
         line_angle = math.degrees(math.atan(line_slope))
         line_y_intercept = line[1] * 1.0 - line_slope * line[0]
+        line2_y_intercept = line2[1] * 1.0 - line2_slope * line2[0]
         # If not vertical or horizontal
         # if abs(line_angle - 90) > 10 or abs(line_angle) > 10:
         #     continue
 
         # print line_slope, line_y_intercept, centerline_slope, centerline_y_intercept
 
+        if (line_slope - centerline_slope) * (line2_slope - centerline_slope) == 0:
+            return path_lines
+
         intersection_point = self.intersection(line_slope, line_y_intercept, centerline_slope, centerline_y_intercept)
+        intersection_point_2 = self.intersection(line2_slope, line2_y_intercept, centerline_slope, centerline_y_intercept)
+
 
         print intersection_point
 
@@ -203,7 +206,8 @@ class CameraTracking:
             # Find y intercept of bounced line
             bounce_y_intercept = intersection_point[1] * 1.0 - bounce_slope * intersection_point[0]
             bounce_x_intercept = intersection_point[0] * 1.0 - intersection_point[1] / bounce_slope
-            path_lines.append([(int(intersection_point[0]), down_left_y), (int(bounce_x_intercept), down_left_x)])
+            path_lines.append([(int(intersection_point[0]), down_left_y), (int(bounce_x_intercept), up_left_y)])
+            path_lines.append([(up_left_x, int(down_left_y * 2.0 - intersection_point_2[1])), (int(bounce_x_intercept * -1.0), up_left_y)])
             print path_lines[len(path_lines) - 1]
 
         return path_lines

@@ -202,9 +202,10 @@ class CameraTracking:
         line = [down_left_x, down_left_y, down_right_x, down_right_y]
         line2 = [up_left_x, up_left_y, down_left_x, down_left_y]
 
-        line_slope = (line[1] - line[3]) * 1.0 / (line[0] - line[2])
-        line2_slope = (line2[1] - line2[3]) * 1.0 / (line2[0] - line2[2])
-        line_angle = math.degrees(math.atan(line_slope))
+        # line_slope = (line[1] - line[3]) * 1.0 / (line[0] - line[2])
+        line_slope = 0
+        line2_slope = 10000
+        # line_angle = math.degrees(math.atan(line_slope))
         line_y_intercept = line[1] * 1.0 - line_slope * line[0]
         line2_y_intercept = line2[1] * 1.0 - line2_slope * line2[0]
         # If not vertical or horizontal
